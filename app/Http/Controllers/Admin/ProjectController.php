@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use App\Models\Technology;
 use App\Models\Type;
 use Illuminate\Http\Request;
 
@@ -18,21 +19,34 @@ class ProjectController extends Controller
    {
       $projects = Project::all();
       return view("profile.admin.projects.index", compact("projects"));
-      // return view("profile.admin.projects.index");
    }
 
    public function create()
    {
       $types = Type::all();
-      return view("profile.admin.projects.create", compact("types"));
+      $technologies = Technology::all();
+      return view("profile.admin.projects.create", compact("types","technologies"));
    }
 
    public function store(StoreProjectRequest $request)
    {
-      $form_data = $request->validated();
-      $newProject = new Project();
-      $newProject->fill($form_data);
-      $newProject->save();
+      $validated_data = $request->validated();
+      $validated_data["slug"] = Project::generateSlug($request->titolo);
+
+      $checkProject = Project::where("slug", $validated_data["slug"])->first();
+      if ($checkProject) {
+         return back()->withInput()->withErrors(["slug" => "Impossibile creare lo slug per questo progetto, cambia il titolo"]);
+      }
+
+      // dd($validated_data);
+      $newProject = Project::create($validated_data);
+
+      
+      if ($request->has("technologies")) {
+         $newProject->technologies()->attach($request->technologies);
+      }
+
+      
       return redirect()->route("admin.projects.show", ["project" => $newProject->id])->with("status", "Il nuovo progetto è stato aggiunto con successo!");
    }
 
@@ -44,14 +58,29 @@ class ProjectController extends Controller
    public function edit(Project $project)
    {
       $types = Type::all();
-      return view("profile.admin.projects.edit", compact("project", "types"));
+      $technologies = Technology::all();
+      return view("profile.admin.projects.edit", compact("project", "types", "technologies"));
    }
+
+
+
+
 
    public function update(UpdateProjectRequest $request, Project $project)
    {
-      $form_data = $request->all();
-      $project->update($form_data);
-      return redirect()->route("admin.projects.show", ["project" => $project->id])->with("status", "Il progetto è stato aggiornato con successo!");
+      $validated_data = $request->validated();
+      $validated_data["slug"] = Project::generateSlug($request->titolo);
+
+      $checkProject = Project::where("slug", $validated_data["slug"])->where("id", "<>", $project->id)->first();
+
+      if ($checkProject) {
+         return back()->withInput()->withErrors(["slug" => "Impossibile creare lo slug"]);
+      }
+
+      $project->technologies()->sync($request->technologies);
+      $project->update($validated_data);
+
+      return redirect()->route("admin.projects.show", ["project" => $project->slug])->with("status", "Il progetto è stato aggiornato con successo!");
    }
 
    public function destroy(Project $project)

@@ -11,6 +11,9 @@
       <h6><small>Slug: {{$project->slug}}</small></h6>
       <h3>Tipo: {{$project->type?$project->type->name:"Nessun tipo abbinato"}}</h3>
       <h6 class="card-text">Data_creazione: {{$project->data_creazione}}</h6>
+      @foreach ($project->technologies as $technology)
+         <span class="badge rounded-pill text-bg-primary">{{$technology->nome}}</span>
+      @endforeach
       <p class="card-text">Descrizione: {{$project->descrizione}}</p>
    </div>   
 @endsection

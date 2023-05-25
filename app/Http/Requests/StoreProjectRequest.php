@@ -19,6 +19,7 @@ class StoreProjectRequest extends FormRequest
          "link_github" => "url",
          "link_website" => "url",
          'type_id' => 'exists:types,id',
+         'technologies' => 'exists:technologies,id'
       ];
    }
 
