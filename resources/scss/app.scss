@@ -1,0 +1,32 @@
+@import '~bootstrap/scss/bootstrap';
+
+.flip-card .card{
+   height: 27rem;
+}
+.flip-card {
+   // width: 332px;
+   height: 460px;
+   // perspective: 1000px;
+}
+
+.flip-card-inner {
+   transition: transform 0.3s;
+   transform-style: preserve-3d;
+}
+
+.flip-card-front,
+.flip-card-back {
+   backface-visibility: hidden;
+}
+
+.flip-card:hover .flip-card-inner,
+.flip-card-back {
+   transform: rotateY(180deg);
+}
+
+.btn .fa-chevron-down{
+   transition: transform 0.3s;
+      &:active{
+         transform: rotate(-90deg);
+      }
+}
